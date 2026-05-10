@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connected Quest — Unit 5</title>
+  <style>
+    :root{
+      --ink:#172033;
+      --muted:#667085;
+      --paper:#ffffff;
+      --soft:#f8fafc;
+      --line:#e6eaf2;
+      --blue:#2f6df6;
+      --blue2:#143cbd;
+      --cyan:#11c5d9;
+      --green:#26c281;
+      --yellow:#ffd84d;
+      --orange:#ff9f1c;
+      --pink:#ff4f9a;
+      --purple:#7c4dff;
+      --red:#ef4444;
+      --shadow:0 18px 45px rgba(24,39,75,.12);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter, Arial, Helvetica, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at 10% 5%, rgba(255,216,77,.40), transparent 28%),
+        radial-gradient(circle at 90% 0%, rgba(17,197,217,.35), transparent 26%),
+        linear-gradient(180deg,#f8fbff 0%,#eef4ff 45%,#fff7df 100%);
+      min-height:100vh;
+    }
+    .app{display:grid;grid-template-columns:290px 1fr;min-height:100vh}
+    aside{
+      background:rgba(255,255,255,.86);
+      backdrop-filter:blur(14px);
+      border-right:1px solid var(--line);
+      padding:18px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      overflow:auto;
+    }
+    main{padding:24px;max-width:1180px;width:100%;margin:0 auto}
+    .brand{
+      background:linear-gradient(135deg,var(--blue),var(--purple));
+      color:#fff;
+      border-radius:28px;
+      padding:20px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .brand:after{
+      content:"";
+      position:absolute;
+      right:-40px;top:-40px;width:130px;height:130px;
+      background:rgba(255,255,255,.16);
+      border-radius:50%;
+    }
+    .brand h1{margin:0;font-size:1.45rem;line-height:1.05}
+    .brand p{margin:8px 0 0;color:#e7eeff;font-size:.92rem}
+    .student-card{
+      margin-top:14px;
+      background:var(--paper);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:14px;
+      box-shadow:0 10px 24px rgba(24,39,75,.06);
+    }
+    label{display:block;font-weight:800;font-size:.9rem;margin:10px 0 6px}
+    input,textarea,select{
+      width:100%;
+      border:2px solid #dce3f2;
+      border-radius:15px;
+      background:#fff;
+      padding:12px 13px;
+      font-size:1rem;
+      outline:none;
+    }
+    input:focus,textarea:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(47,109,246,.12)}
+    textarea{min-height:105px;resize:vertical}
+    .progress{height:15px;background:#e9eef8;border-radius:999px;overflow:hidden;margin:8px 0}
+    .progress span{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:999px;transition:.4s}
+    .score{font-size:.9rem;color:var(--muted);font-weight:700}
+    .menu{display:grid;gap:8px;margin-top:14px}
+    .menu button{
+      border:0;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:17px;
+      padding:12px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:850;
+      cursor:pointer;
+      text-align:left;
+      color:var(--ink);
+      transition:.15s transform,.15s background;
+    }
+    .menu button:hover{transform:translateY(-1px);background:#f8fbff}
+    .menu button.active{background:#172033;color:#fff;border-color:#172033}
+    .dot{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:#eef4ff}
+    .menu button.active .dot{background:rgba(255,255,255,.18)}
+    .hero{
+      border-radius:34px;
+      color:#fff;
+      background:
+        linear-gradient(135deg,rgba(47,109,246,.96),rgba(124,77,255,.94)),
+        url("data:image/svg+xml,%3Csvg width='700' height='300' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='rgba(255,255,255,.22)' stroke-width='18'%3E%3Cpath d='M-20 230 C180 90 280 330 480 180 S720 120 780 250'/%3E%3Cpath d='M-20 100 C170 -20 300 210 510 80 S690 20 800 160'/%3E%3C/g%3E%3C/svg%3E");
+      padding:30px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .hero h2{font-size:clamp(2rem,5vw,4.2rem);line-height:.95;margin:0}
+    .hero p{font-size:1.08rem;max-width:760px;color:#edf4ff}
+    .chips{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+    .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;background:rgba(255,255,255,.18);padding:8px 12px;font-weight:800}
+    .module{display:none;animation:fade .22s ease}
+    .module.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+    .card{
+      background:rgba(255,255,255,.94);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:20px;
+      box-shadow:0 12px 32px rgba(24,39,75,.07);
+    }
+    .card h2,.card h3{margin-top:0}
+    .card h2{font-size:1.65rem}
+    .mini{font-size:.92rem;color:var(--muted)}
+    .task{
+      border:2px solid #edf1fa;
+      background:#fbfdff;
+      border-radius:20px;
+      padding:16px;
+      margin:12px 0;
+    }
+    .task-title{font-weight:900;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .tag{display:inline-block;background:#eef4ff;color:var(--blue2);border-radius:999px;padding:5px 9px;font-size:.78rem;font-weight:900;margin:2px}
+    .book{
+      border-left:8px solid var(--yellow);
+      background:#fffbea;
+    }
+    .support{
+      border-left:8px solid var(--cyan);
+      background:#ecfeff;
+    }
+    .oral{
+      border-left:8px solid var(--purple);
+      background:#f5f0ff;
+    }
+    .success{
+      border-left:8px solid var(--green);
+      background:#ecfdf5;
+    }
+    .warning{
+      border-left:8px solid var(--orange);
+      background:#fff7ed;
+    }
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{
+      border:0;
+      border-radius:16px;
+      padding:12px 15px;
+      font-weight:900;
+      cursor:pointer;
+      background:#172033;
+      color:#fff;
+      box-shadow:0 8px 18px rgba(24,39,75,.12);
+    }
+    .btn.secondary{background:#eef4ff;color:#143cbd}
+    .btn.green{background:var(--green);color:#063f2a}
+    .btn.orange{background:var(--orange);color:#3b2100}
+    .wordbank{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .word{
+      background:#fff;
+      border:2px solid #dbe4f5;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:850;
+    }
+    table{width:100%;border-collapse:separate;border-spacing:0;margin:12px 0;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fff}
+    th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+    th{background:#f2f6ff;font-weight:900}
+    tr:last-child td{border-bottom:0}
+    .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .choice{display:grid;gap:8px}
+    .choice button{
+      text-align:left;
+      border:2px solid #dbe4f5;
+      background:#fff;
+      border-radius:15px;
+      padding:12px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    .choice button.ok{background:#dcfce7;border-color:#22c55e}
+    .choice button.bad{background:#fee2e2;border-color:#ef4444}
+    .feedback{font-weight:900;margin-top:8px}
+    .phone{
+      width:160px;height:300px;border-radius:30px;background:#172033;margin:auto;padding:12px;box-shadow:var(--shadow);
+    }
+    .screen{height:100%;border-radius:22px;background:linear-gradient(180deg,#dff9ff,#fff);padding:14px;text-align:center;display:flex;flex-direction:column;justify-content:center;gap:10px}
+    .appicon{width:58px;height:58px;border-radius:18px;background:linear-gradient(135deg,var(--pink),var(--yellow));margin:auto;display:grid;place-items:center;font-size:1.7rem}
+    .footer-actions{position:sticky;bottom:0;background:rgba(248,251,255,.88);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:12px;margin:24px -24px -24px}
+    .footer-actions-inner{max-width:1180px;margin:auto;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+    .print-only{display:none}
+    @media (max-width:900px){
+      .app{grid-template-columns:1fr}
+      aside{position:relative;height:auto}
+      main{padding:14px}
+      .two{grid-template-columns:1fr}
+      .menu{grid-template-columns:repeat(2,1fr)}
+      .menu button{font-size:.9rem}
+    }
+    @media print{
+      body{background:white}
+      .app{display:block}
+      aside,.footer-actions,.no-print{display:none!important}
+      main{max-width:none;padding:0}
+      .module{display:block!important;page-break-after:auto}
+      .hero,.card{box-shadow:none;border:1px solid #cbd5e1}
+      .hero{color:#111;background:white}
+      .hero p{color:#333}
+      .chip{border:1px solid #999;color:#111;background:white}
+      input,textarea,select{border:1px solid #999}
+      .print-only{display:block}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="no-print">
+    <div class="brand">
+      <h1>Connected Quest</h1>
+      <p>Unit 5 · Adapted learning platform</p>
+    </div>
+    <div class="student-card">
+      <label>👤 Student name</label>
+      <input id="studentName" placeholder="Write your name">
+      <div class="score" id="scoreText">0 / 12 missions complete</div>
+      <div class="progress"><span id="bar"></span></div>
+      <p class="mini">Work step by step. Use the book support boxes.</p>
+    </div>
+    <div class="menu">
+      <button class="active" onclick="go('home',this)"><span class="dot">🏠</span>Start</button>
+      <button onclick="go('m51',this)"><span class="dot">📱</span>5.1 Apps</button>
+      <button onclick="go('m52',this)"><span class="dot">🧠</span>5.2 Used to</button>
+      <button onclick="go('m53',this)"><span class="dot">⏳</span>5.3 Perfect</button>
+      <button onclick="go('m54',this)"><span class="dot">💡</span>5.4 Pitch</button>
+      <button onclick="go('m55',this)"><span class="dot">🛠️</span>5.5 Repair</button>
+      <button onclick="go('m56',this)"><span class="dot">📣</span>5.6 Advert</button>
+      <button onclick="go('final',this)"><span class="dot">🚀</span>Final task</button>
+      <button onclick="go('teacher',this)"><span class="dot">🧑‍🏫</span>Teacher</button>
+    </div>
+  </aside>
+
+  <main>
+    <section id="home" class="module active">
+      <div class="hero">
+        <h2>Unit 5<br>Connected</h2>
+        <p>Aprende vocabulario de tecnología, habla de hábitos del pasado, usa <strong>present perfect</strong>, crea una app, preséntala y escribe su anuncio.</p>
+        <div class="chips">
+          <span class="chip">📘 Book route: 5.1 → 5.6</span>
+          <span class="chip">✅ Adapted support</span>
+          <span class="chip">🎤 2 oral tasks</span>
+          <span class="chip">📝 Final advert</span>
+        </div>
+      </div>
+      <div class="grid" style="margin-top:18px">
+        <div class="card book">
+          <h2>How to use this platform</h2>
+          <p>1. Open your book at the correct section.</p>
+          <p>2. Read the yellow “Book support” box.</p>
+          <p>3. Do the short online mission.</p>
+          <p>4. Save your answer.</p>
+        </div>
+        <div class="card support">
+          <h2>Adapted help</h2>
+          <p>You can use:</p>
+          <div class="wordbank">
+            <span class="word">word banks</span><span class="word">sentence starters</span><span class="word">models</span><span class="word">Spanish support</span>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Final product</h2>
+          <div class="phone"><div class="screen"><div class="appicon">⭐</div><strong>Your app</strong><span class="mini">Pitch + advert + oral presentation</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="m51" class="module">
+      <div class="card book">
+        <h2>5.1 Connected — Apps and devices</h2>
+        <p><strong>Use your book:</strong> look at pages 56–57. Focus on the photos, app categories and Project Builder 1.</p>
+        <p><strong>Goal:</strong> talk about different types of apps and what they do.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Word bank</h3>
+          <div class="wordbank">
+            <span class="word">smartphone</span><span class="word">wireless headphones</span><span class="word">games console</span><span class="word">laptop</span><span class="word">fitness tracker</span><span class="word">Bluetooth speaker</span>
+          </div>
+          <div class="wordbank">
+            <span class="word">educational</span><span class="word">gaming</span><span class="word">messaging</span><span class="word">navigation</span><span class="word">shopping</span><span class="word">music streaming</span>
+          </div>
+        </div>
+        <div class="card support">
+          <h3>Sentence starters</h3>
+          <p>I use a/an ___ to ___.</p>
+          <p>This app is for ___.</p>
+          <p>It helps people to ___.</p>
+          <p>It would be useful because ___.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Mission 1 — My useful app</h3>
+        <label>Choose an app type</label>
+        <select id="appType"><option>educational</option><option>fitness</option><option>gaming</option><option>messaging</option><option>navigation</option><option>shopping</option></select>
+        <label>What does it help people do?</label>
+        <input id="appUse" placeholder="Example: learn English / find places / talk to friends">
+        <button class="btn" onclick="saveMission('m51','Mission 1 saved')">Save mission</button>
+      </div>
+    </section>
+
+    <section id="m52" class="module">
+      <div class="card book">
+        <h2>5.2 Smartphones in the dock — used to</h2>
+        <p><strong>Use your book:</strong> look at pages 58–59. Focus on the opinions about smartphones and the grammar box.</p>
+        <p><strong>Goal:</strong> compare life in the past and now.</p>
+      </div>
+      <div class="two">
+        <div class="card">
+          <h3>Grammar support</h3>
+          <table>
+            <tr><th>+</th><td>I <strong>used to</strong> play outside.</td></tr>
+            <tr><th>-</th><td>I <strong>didn’t use to</strong> have a smartphone.</td></tr>
+            <tr><th>?</th><td><strong>Did you use to</strong> watch TV?</td></tr>
+          </table>
+        </div>
+        <div class="card support">
+          <h3>Spanish help</h3>
+          <p><strong>used to</strong> = antes solía / antes hacía algo.</p>
+          <p>Se usa para hablar de hábitos o situaciones del pasado que ahora han cambiado.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Mission 2 — Then and now</h3>
+        <label>In the past, people used to...</label><input id="usedA" placeholder="Example: use maps">
+        <label>Now, people...</label><input id="usedB" placeholder="Example: use navigation apps">
+        <label>I didn’t use to...</label><input id="usedC" placeholder="Example: send many messages">
+        <button class="btn" onclick="saveMission('m52','Mission 2 saved')">Save mission</button>
+      </div>
+    </section>
+
+    <section id="m53" class="module">
+      <div class="card book">
+        <h2>5.3 Life-changing apps — Present perfect</h2>
+        <p><strong>Use your book:</strong> look at pages 60–61. Focus on the reading about apps that help people and the grammar box.</p>
+        <p><strong>Goal:</strong> use <em>have/has + past participle</em> with <strong>for</strong> and <strong>since</strong>.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>For or since?</h3>
+          <table>
+            <tr><th>for</th><td>a period of time: for two years, for three months, for a long time</td></tr>
+            <tr><th>since</th><td>starting point: since 2022, since Monday, since I was ten</td></tr>
+          </table>
+        </div>
+        <div class="card support">
+          <h3>Past participles</h3>
+          <div class="wordbank">
+            <span class="word">be → been</span><span class="word">buy → bought</span><span class="word">do → done</span><span class="word">go → gone</span><span class="word">make → made</span><span class="word">write → written</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Mission 3 — My experience</h3>
+        <label>I have used ___ for ___.</label><input id="perfA" placeholder="Example: I have used WhatsApp for three years.">
+        <label>I have had ___ since ___.</label><input id="perfB" placeholder="Example: I have had this phone since 2024.">
+        <label>An app has helped me to ___.</label><input id="perfC" placeholder="Example: organize my homework">
+        <button class="btn" onclick="saveMission('m53','Mission 3 saved')">Save mission</button>
+      </div>
+    </section>
+
+    <section id="m54" class="module">
+      <div class="card book">
+        <h2>5.4 Perfect pitch? — Present your app</h2>
+        <p><strong>Use your book:</strong> look at pages 62–63. Focus on business vocabulary and Project Builder 4.</p>
+        <p><strong>Goal:</strong> persuade investors to choose your app.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Business words</h3>
+          <div class="wordbank">
+            <span class="word">commercial success</span><span class="word">develop</span><span class="word">grow</span><span class="word">invest</span><span class="word">marketing</span><span class="word">product</span><span class="word">promote</span><span class="word">sales</span>
+          </div>
+        </div>
+        <div class="card support">
+          <h3>Pitch frame</h3>
+          <p>My app is called ___.</p>
+          <p>It solves the problem of ___.</p>
+          <p>It is for people who ___.</p>
+          <p>You should invest because ___.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Mission 4 — Build your pitch</h3>
+        <label>Name of app</label><input id="pitchName">
+        <label>Problem</label><input id="pitchProblem">
+        <label>Users</label><input id="pitchUsers">
+        <label>Why invest?</label><textarea id="pitchReason"></textarea>
+        <button class="btn" onclick="makePitch()">Create pitch</button>
+        <div id="pitchOut" class="task success"></div>
+      </div>
+    </section>
+
+    <section id="m55" class="module">
+      <div class="card book">
+        <h2>5.5 At the phone repair shop</h2>
+        <p><strong>Use your book:</strong> look at pages 64–65. Focus on the dialogue, key phrases and asking for clarification.</p>
+        <p><strong>Goal:</strong> explain a phone problem and ask about the repair.</p>
+      </div>
+      <div class="two">
+        <div class="card">
+          <h3>Useful phrases</h3>
+          <table>
+            <tr><th>Shop assistant</th><th>Customer</th></tr>
+            <tr><td>How can I help you?</td><td>I’ve got a problem with my phone.</td></tr>
+            <tr><td>What is the problem exactly?</td><td>I can’t charge the phone.</td></tr>
+            <tr><td>Can I have a look, please?</td><td>How much will it cost?</td></tr>
+            <tr><td>It will cost €45.</td><td>When can I pick it up?</td></tr>
+          </table>
+        </div>
+        <div class="card support">
+          <h3>Clarification</h3>
+          <p>What do you mean?</p>
+          <p>I’m sorry, I’m not sure what you mean.</p>
+          <p>Could you be more specific?</p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Mission 5 — Repair dialogue</h3>
+        <label>Problem</label>
+        <select id="repairProblem">
+          <option>charge the phone</option><option>connect to Wi-Fi</option><option>download apps</option><option>answer a call</option><option>send messages</option><option>turn the speaker on</option>
+        </select>
+        <label>Write your dialogue</label>
+        <textarea id="repairText" placeholder="Shop assistant: How can I help you?
+Customer: I've got a problem with my phone.
+Shop assistant: What is the problem exactly?
+Customer: I can't..."></textarea>
+        <button class="btn" onclick="saveMission('m55','Mission 5 saved')">Save mission</button>
+      </div>
+    </section>
+
+    <section id="m56" class="module">
+      <div class="card book">
+        <h2>5.6 An advertisement</h2>
+        <p><strong>Use your book:</strong> look at pages 64–65, section 5.6. Focus on Snack Pic, rhetorical questions and Project Builder 5.</p>
+        <p><strong>Goal:</strong> write an advertisement for your app.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <h3>Advertisement parts</h3>
+          <span class="tag">slogan</span>
+          <span class="tag">description</span>
+          <span class="tag">benefits</span>
+          <span class="tag">price</span>
+          <span class="tag">reviews</span>
+          <span class="tag">how to get it</span>
+        </div>
+        <div class="card support">
+          <h3>Rhetorical questions</h3>
+          <p>Would you like to ___?</p>
+          <p>Do you want to ___?</p>
+          <p>Is this the perfect app for you?</p>
+        </div>
+        <div class="card warning">
+          <h3>Strong adjectives</h3>
+          <div class="wordbank">
+            <span class="word">brilliant</span><span class="word">incredible</span><span class="word">marvellous</span><span class="word">terrific</span><span class="word">useful</span><span class="word">easy</span><span class="word">safe</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Mission 6 — My advertisement</h3>
+        <label>Rhetorical question</label><input id="adQ" placeholder="Would you like to...?">
+        <label>Slogan</label><input id="adSlogan" placeholder="Example: Learn more. Worry less.">
+        <label>Advertisement</label><textarea id="adBody" placeholder="Our app is... It helps... It is brilliant because... Try it today!"></textarea>
+        <button class="btn" onclick="saveMission('m56','Mission 6 saved')">Save mission</button>
+      </div>
+    </section>
+
+    <section id="final" class="module">
+      <div class="hero">
+        <h2>Final Task</h2>
+        <p>Create your app project: idea, repair dialogue, pitch and advertisement.</p>
+      </div>
+      <div class="grid" style="margin-top:18px">
+        <div class="card oral">
+          <h2>Oral 1: Repair role-play</h2>
+          <p>Speak with a partner. One student is the customer and the other is the shop assistant.</p>
+          <p><strong>Must include:</strong> problem, price, pick-up time, clarification phrase.</p>
+        </div>
+        <div class="card oral">
+          <h2>Oral 2: App pitch</h2>
+          <p>Present your app in 60–90 seconds.</p>
+          <p><strong>Must include:</strong> name, problem, users, benefits, reason to invest.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Portfolio checklist</h2>
+        <label><input type="checkbox" onchange="toggleCheck('c1',this)"> I know app vocabulary.</label>
+        <label><input type="checkbox" onchange="toggleCheck('c2',this)"> I can use used to.</label>
+        <label><input type="checkbox" onchange="toggleCheck('c3',this)"> I can use for and since.</label>
+        <label><input type="checkbox" onchange="toggleCheck('c4',this)"> I can ask for phone repair help.</label>
+        <label><input type="checkbox" onchange="toggleCheck('c5',this)"> I can present my app.</label>
+        <label><input type="checkbox" onchange="toggleCheck('c6',this)"> I can write an advert.</label>
+      </div>
+    </section>
+
+    <section id="teacher" class="module">
+      <div class="card">
+        <h2>Teacher route — 3 weeks</h2>
+        <table>
+          <tr><th>Class</th><th>Book section</th><th>Focus</th><th>Online product</th><th>Support</th></tr>
+          <tr><td>1</td><td>5.1</td><td>Apps and devices</td><td>Useful app idea</td><td>Word bank + sentence starters</td></tr>
+          <tr><td>2</td><td>5.2</td><td>used to</td><td>Then and now</td><td>Model table + Spanish support</td></tr>
+          <tr><td>3</td><td>5.3</td><td>Present perfect for/since</td><td>Experience sentences</td><td>for/since table + participles</td></tr>
+          <tr><td>4</td><td>5.5</td><td>Phone repair dialogue</td><td>Repair script</td><td>Dialogue frame</td></tr>
+          <tr><td>5</td><td>5.4</td><td>Pitch to investors</td><td>Pitch script</td><td>Problem-solution template</td></tr>
+          <tr><td>6</td><td>5.6</td><td>Advertisement</td><td>Advert text</td><td>Rhetorical questions + adjectives</td></tr>
+          <tr><td>Oral 1</td><td>5.5</td><td>Repair role-play</td><td>Performance</td><td>Visible role card</td></tr>
+          <tr><td>Oral 2</td><td>5.4–5.6</td><td>App presentation</td><td>Pitch</td><td>Can read support notes</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h2>Adapted rubric</h2>
+        <table>
+          <tr><th>Criterion</th><th>1 — Starting</th><th>2 — Developing</th><th>3 — Achieved</th></tr>
+          <tr><td>Vocabulary</td><td>Recognises words</td><td>Uses words with help</td><td>Uses unit vocabulary in short sentences</td></tr>
+          <tr><td>Grammar</td><td>Completes models</td><td>Produces simple sentences</td><td>Uses used to and present perfect understandably</td></tr>
+          <tr><td>Speaking</td><td>Answers with single words</td><td>Uses short prepared phrases</td><td>Maintains a short guided interaction</td></tr>
+          <tr><td>Writing</td><td>Copies model</td><td>Adapts model</td><td>Creates a clear advert/pitch with support</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <div class="footer-actions no-print">
+      <div class="footer-actions-inner">
+        <button class="btn secondary" onclick="exportWork()">⬇ Export student work</button>
+        <button class="btn secondary" onclick="window.print()">🖨 Print</button>
+        <button class="btn orange" onclick="resetAll()">Reset</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const TOTAL=12;
+let data = JSON.parse(localStorage.getItem('connectedQuest')||'{"done":[],"answers":{}}');
+const done = new Set(data.done||[]);
+const answers = data.answers||{};
+
+function persist(){
+  localStorage.setItem('connectedQuest', JSON.stringify({done:[...done],answers}));
+  updateProgress();
+}
+function updateProgress(){
+  const n=done.size;
+  document.getElementById('scoreText').textContent = n+' / '+TOTAL+' missions complete';
+  document.getElementById('bar').style.width = Math.min(100, Math.round(n/TOTAL*100))+'%';
+}
+function go(id,btn){
+  document.querySelectorAll('.module').forEach(m=>m.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function saveMission(key,msg){
+  document.querySelectorAll('#'+key+' input,#'+key+' textarea,#'+key+' select').forEach(el=>{
+    if(el.id) answers[el.id]=el.value;
+  });
+  done.add(key);
+  persist();
+  alert(msg);
+}
+function makePitch(){
+  const name = document.getElementById('pitchName').value || '[name]';
+  const problem = document.getElementById('pitchProblem').value || '[problem]';
+  const users = document.getElementById('pitchUsers').value || '[users]';
+  const reason = document.getElementById('pitchReason').value || '[reason]';
+  const text = `Good morning. My app is called ${name}. It solves the problem of ${problem}. It is for ${users}. You should invest in it because ${reason}. Thank you.`;
+  document.getElementById('pitchOut').innerHTML = '<strong>Your pitch:</strong><br>'+text;
+  answers.pitch=text; done.add('m54'); persist();
+}
+function toggleCheck(key,box){
+  if(box.checked) done.add(key); else done.delete(key);
+  persist();
+}
+function exportWork(){
+  const student = document.getElementById('studentName').value || 'student';
+  let out = `Connected Quest — Unit 5\nStudent: ${student}\nCompleted: ${[...done].join(', ')}\n\n`;
+  document.querySelectorAll('input, textarea, select').forEach(el=>{
+    if(el.id && el.id !== 'studentName') out += `${el.id}: ${el.value}\n`;
+  });
+  if(answers.pitch) out += `\nPitch:\n${answers.pitch}\n`;
+  const blob = new Blob([out],{type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'connected_quest_'+student.replaceAll(' ','_')+'.txt';
+  a.click();
+}
+function resetAll(){
+  if(confirm('Delete all saved progress?')){
+    localStorage.removeItem('connectedQuest');
+    location.reload();
+  }
+}
+function restore(){
+  Object.entries(answers).forEach(([id,value])=>{
+    const el=document.getElementById(id);
+    if(el)el.value=value;
+  });
+}
+restore();
+updateProgress();
+</script>
+</body>
+</html>
